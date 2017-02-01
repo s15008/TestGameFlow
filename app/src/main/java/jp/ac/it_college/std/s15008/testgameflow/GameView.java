@@ -10,6 +10,7 @@ import android.view.View;
 
 import jp.ac.it_college.std.s15008.testgameflow.Mode.GameMode;
 import jp.ac.it_college.std.s15008.testgameflow.Mode.IntroMode;
+import jp.ac.it_college.std.s15008.testgameflow.Mode.OverMode;
 
 /**
  * Created by s15008 on 17/01/30.
@@ -31,6 +32,7 @@ public class GameView extends View {
     // モードのオブジェクト
     private IntroMode mIntroMode;
     private GameMode mGameMode;
+    private OverMode mOverMode;
 
     // タッチ座標
     private float mTouchX;
@@ -49,6 +51,7 @@ public class GameView extends View {
         mMode = Mode.INTRO;
         mGameMode = new GameMode();
         mIntroMode = new IntroMode();
+        mOverMode = new OverMode(context);
 
         // タッチイベント関係
         mTouchX = 0f;
@@ -75,21 +78,46 @@ public class GameView extends View {
         canvas.drawText("GAME VIEW", canvas.getWidth()/2, paintText.getTextSize(), paintText);
 
         // GameModeのupdate()とdraw()は毎フレーム処理
+        if (mMode != Mode.GAME) {
+            mGameMode.update(canvas, mMotionEvent, mMode);
+            mGameMode.draw(canvas);
+        }
+
         // モードによってゲームの処理を変える
         if (mMode == Mode.INTRO) {
-            //Log.d(TAG, "イントロモード");
             mIntroMode.update(canvas, mMotionEvent);
             mIntroMode.draw(canvas);
 
             // モード遷移
             if (mIntroMode.mNextMode != mIntroMode.mCurrentMode) {
                 mMode = mIntroMode.mNextMode;
+                mIntroMode.init();
                 invalidate();
             }
         } else if (mMode == Mode.GAME) {
-            Log.d(TAG, "ゲームモード");
+            mGameMode.update(canvas, mMotionEvent, mMode);
+            mGameMode.draw(canvas);
+
+            // モード遷移
+            if (mGameMode.mNextMode != mGameMode.mCurrentMode) {
+                mMode = mGameMode.mNextMode;
+                mGameMode.init();
+                invalidate();
+            }
         } else if (mMode == Mode.OVER) {
-            Log.d(TAG, "ゲームオーバーモード");
+            // モードの初期化
+            if (mOverMode.mCurrentMode != Mode.OVER) {
+                mOverMode.init(canvas);
+            }
+            mOverMode.update(canvas, mMotionEvent);
+            mOverMode.draw(canvas);
+
+            // モード遷移
+            if (mMode != mOverMode.mNextMode) {
+                mMode = mOverMode.mNextMode;
+                invalidate();
+            }
+
         } else if (mMode == Mode.CLEAR) {
             Log.d(TAG, "ゲームクリアーモード");
         }

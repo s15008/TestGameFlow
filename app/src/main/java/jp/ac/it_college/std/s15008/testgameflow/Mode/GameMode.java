@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import jp.ac.it_college.std.s15008.testgameflow.GameView;
@@ -21,7 +22,9 @@ public class GameMode {
     private float mTouchX;
     private float mTouchY;
 
+    // デバッグ用
     Paint paintText;
+    Paint paintBackground;
 
     class MyButton {
         private final Paint mRectPaint;
@@ -31,8 +34,8 @@ public class GameMode {
 
         public MyButton(int x, int y) {
             mRectPaint = new Paint(Color.BLUE);
-            mWidth = 300;
-            mHeight = 250;
+            mWidth = 100;
+            mHeight = 100;
             this.mRect = new Rect(x, y, x+mWidth, y+mHeight);
         }
 
@@ -44,22 +47,35 @@ public class GameMode {
 
 
     public GameMode() {
-        mCurrentMode = GameView.Mode.GAME;
-        mNextMode = mCurrentMode;
         paintText = new Paint();
         paintText.setColor(Color.RED);
         paintText.setTextSize(25);
         paintText.setTextAlign(Paint.Align.CENTER);
+        paintBackground = new Paint();
+        paintBackground.setColor(Color.argb(255, 255, 153, 255));
 
+        init();
+    }
+
+    // 初期化処理
+    public void init() {
+        mCurrentMode = GameView.Mode.GAME;
+        mNextMode = mCurrentMode;
     }
 
     // 更新処理
-    public void update(Canvas canvas, MotionEvent motionEvent) {
+    public void update(Canvas canvas, MotionEvent motionEvent, GameView.Mode currentMode) {
 
+        // オブジェクトの初期化処理
         if (mMyButton == null) {
-            int x = (canvas.getWidth() / 2) - (canvas.getWidth() / 2);
-            int y = (canvas.getHeight() / 2) - (canvas.getHeight() / 2);
+            int x = canvas.getWidth() - (100 * 2);
+            int y = canvas.getHeight() - (100 * 2);
             mMyButton = new GameMode.MyButton(x, y - (canvas.getHeight() / 4));
+        }
+
+        // ゲームモードじゃない場合はこうしん処理はスキップする
+        if (currentMode != mCurrentMode) {
+            return;
         }
 
         // タッチ処理
@@ -70,7 +86,7 @@ public class GameMode {
                 mTouchX = touchX;
                 mTouchY = touchY;
                 if (mMyButton.mRect.contains((int) mTouchX, (int) mTouchY)) {
-                    mNextMode = GameView.Mode.INTRO;
+                    mNextMode = GameView.Mode.OVER;
                 }
             } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                 mTouchX = touchX;
@@ -80,16 +96,15 @@ public class GameMode {
                 mTouchY = touchY;
             }
         }
-//        mNextMode = GameView.Mode.INTRO;
     }
 
     // 描画処理
     public void draw(Canvas canvas) {
-        //Log.d(TAG, "IntroMode.draw()実行中");
-        canvas.drawText("Intro Mode", canvas.getWidth()/2, canvas.getHeight()/2, paintText);
+        canvas.drawRect(0, 10, canvas.getWidth(), canvas.getHeight() - 10, paintBackground);
+        canvas.drawText("Game Mode", canvas.getWidth()/2, canvas.getHeight() - paintText.getTextSize(), paintText);
         canvas.drawText(
                 String.format("TouchX : %f\nTouchY : %f", mTouchX, mTouchY),
-                canvas.getWidth()/2, canvas.getHeight()/2 + 100, paintText);
+                canvas.getWidth()/2, canvas.getHeight() - paintText.getTextSize() * 2, paintText);
 
         mMyButton.draw(canvas);
     }

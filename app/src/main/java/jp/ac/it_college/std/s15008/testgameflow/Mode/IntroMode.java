@@ -23,7 +23,11 @@ public class IntroMode {
     private float mTouchX;
     private float mTouchY;
 
+
+    // デバッグ用
     Paint paintText;
+    Paint paintBackground;
+
 
     class MyButton {
         private final Paint mRectPaint;
@@ -46,13 +50,20 @@ public class IntroMode {
 
 
     public IntroMode() {
-        mCurrentMode = GameView.Mode.INTRO;
-        mNextMode = mCurrentMode;
         paintText = new Paint();
         paintText.setColor(Color.RED);
         paintText.setTextSize(25);
         paintText.setTextAlign(Paint.Align.CENTER);
+        paintBackground = new Paint();
+        paintBackground.setColor(Color.argb(200, 0, 0, 0));
 
+        init();
+    }
+
+    // 初期化処理
+    public void init() {
+        mCurrentMode = GameView.Mode.INTRO;
+        mNextMode = mCurrentMode;
     }
 
     // 更新処理
@@ -61,8 +72,7 @@ public class IntroMode {
         if (mMyButton == null) {
             int x = (canvas.getWidth() / 2) - (300 / 2);
             int y = (canvas.getHeight() / 2) - (250 / 2);
-            //mMyButton = new MyButton(x, y - (canvas.getHeight() / 4));
-            mMyButton = new MyButton(x, y);
+            mMyButton = new MyButton(x, y - (canvas.getHeight() / 4));
         }
 
         // タッチ処理
@@ -88,11 +98,11 @@ public class IntroMode {
 
     // 描画処理
     public void draw(Canvas canvas) {
-        //Log.d(TAG, "IntroMode.draw()実行中");
+        canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), paintBackground);
         canvas.drawText("Intro Mode", canvas.getWidth()/2, canvas.getHeight()/2, paintText);
         canvas.drawText(
-                String.format("TouchX : %f\nTouchY : %f", mTouchX, mTouchY),
-                canvas.getWidth()/2, canvas.getHeight()/2 + 100, paintText);
+                String.format("TouchX : %f  TouchY : %f", mTouchX, mTouchY),
+                canvas.getWidth()/2, canvas.getHeight() - paintText.getTextSize() * 2, paintText);
 
         mMyButton.draw(canvas);
     }
